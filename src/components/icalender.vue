@@ -1,0 +1,188 @@
+<template>
+  <div class="icalender">
+    <div class="icalender-header">
+      <div class="arrow" @click="forward">
+        <svg fill="transparent" viewBox="0 0 30 30">
+          <polyline points="20,5 10,15 20,25" stroke="#dcdcdc" stroke-width="4"></polyline>
+        </svg>
+      </div>
+      <div class="title">
+        {{ year }}年{{ month_list[month] }}月
+      </div>
+      <div class="arrow" @click="back">
+        <svg fill="transparent" viewBox="0 0 30 30">
+          <polyline points="10,5 20,15 10,25" stroke="#dcdcdc" stroke-width="4"></polyline>
+        </svg>
+      </div>
+    </div>
+
+    <div class="icalender-body">
+      <div class="week-head">
+        <div class="week-item" v-for="item in week_list" :key="item">{{ item }}</div>
+      </div>
+      <table>
+        <tr v-for="(item,index) in list" :key="index">
+          <td v-for="(it,idx) in item" :key="idx">
+            <span :title="it.full_day">{{ it.day }}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "icalender",
+  data() {
+    return {
+      year: "2019",
+      month: "09",
+      month_list: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+      week_list: ["日", "一", "二", "三", "四", "五", "六"],
+      list: [],
+      counts: []
+    }
+  },
+  methods: {
+    forward() {
+      if(this.month == 0){
+        this.year = this.year == 1970 ? 1970 : this.year - 1;
+        this.month = 11;
+      } else {
+        this.month -= 1;
+      }
+      this.getDayList(this.year, this.month);
+    },
+    back() {
+      if(this.month == 11){
+        this.year += 1;
+        this.month = 0;
+      } else {
+        this.month += 1;
+      }
+      this.getDayList(this.year, this.month);
+    },
+    getCurrentMonth() {
+      let date = new Date();
+      return date.getMonth();
+    },
+    getCurrentYear() {
+      let date = new Date();
+      return date.getFullYear();
+    },
+    /** 
+     * @return 当前日期某天
+    */
+    getCurrentDate() {
+      let date = new Date();
+      return date.getDate();
+    },
+    /** 
+     * @return 当前日期星期
+    */
+    getCurrentDay() {
+      let date = new Date();
+      return date.getDay();
+    },
+    getDayList(year, month) {
+      if(arguments.length != 2) throw new Error("getDayList必须传入两个参数year和month")
+      let counts = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; // 每年月份天数
+      let date = new Date();
+      this.list = [];
+      if (year % 4 == 0 && year % 100 != 0 || year % 400 == 0) {
+        counts[1] = 29;
+      }
+      // 根据当前月1号是星期几 判断需要绘制几列
+      let this_week = new Date(year, month, 1).getDay(); // 当前月1号是星期几
+      let row = this_week >= 5 ? 6 : 5;// 绘制几列 ? 6 ：5
+      let i_list = []
+      for(let i=0;i<this_week;i++){
+        i_list.push("")
+      }
+      for(let i = 0;i < counts[month];i++) {
+        i_list.push(i+1);
+      }
+      let arr = []
+      for(let i = 0;i < i_list.length;i++) {
+        if (i > 0 && i % 7 == 0) {
+          this.list.push(arr)
+          arr = []
+        }
+        let obj = {
+          day: i_list[i]
+        }
+        
+        if (i_list[i] != '') {
+          obj.full_day = year + "-" + this.month_list[month] + "-" + i_list[i];
+        }
+        arr.push(obj);
+      }
+      this.list.push(arr);
+    }
+  },
+  mounted() {
+    this.month = this.getCurrentMonth();
+    this.year = this.getCurrentYear();
+
+    this.getDayList(this.year, this.month);
+  }
+}
+</script>
+
+<style scoped>
+svg{
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+.arrow{
+  display: inline-block;
+  background-color: rgba(31,45,61,.11);
+  width: 30px;
+  height: 30px;
+  line-height: 28px;
+  text-align: center;
+  border-radius: 50%;
+  transition: .2s;
+}
+
+.arrow:hover{
+  background-color: rgba(31,45,61,.5);
+}
+
+.title{
+  display: inline-block;
+  margin: auto 0;
+  text-align: center;
+  flex: 1;
+}
+
+.icalender{
+  width: 300px;
+  user-select: none;
+}
+
+.icalender-header{
+  display: flex;
+}
+
+.icalender-body{
+ 
+}
+.icalender-body table{
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.icalender-body td{
+  text-align: center;
+}
+
+.week-head{
+  display: flex;
+  justify-content: space-around;
+}
+
+</style>
