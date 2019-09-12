@@ -1,12 +1,25 @@
 {
   "name": "icalender",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
+    "dev": "vue-cli-service serve",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flitrue/icalender.git"
+  },
+  "author": {
+    "name": "flitrue",
+    "email": "812863096@qq.com"
+  },
+  "keywords": [
+    "vue",
+    "vue-plugin",
+    "icalender"
+  ],
   "dependencies": {
     "core-js": "^2.6.5",
     "vue": "^2.6.10"
@@ -42,5 +55,6 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "license": "MIT"
 }

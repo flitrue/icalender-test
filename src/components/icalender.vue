@@ -22,8 +22,11 @@
       </div>
       <table>
         <tr v-for="(item,index) in list" :key="index">
-          <td v-for="(it,idx) in item" :key="idx">
-            <span :title="it.full_day">{{ it.day }}</span>
+          <td v-for="(it,idx) in item" :key="idx" :class="it.active?'active-bg':''">
+            <div class="point">
+              <div :class="{'active-point':now==it.full_day, 'now-point': now==it.full_day}"></div>
+              <span class="date-label" :active="now==it.full_day" :title="it.full_day">{{ it.day }}</span>
+            </div>
           </td>
         </tr>
       </table>
@@ -36,8 +39,9 @@ export default {
   name: "icalender",
   data() {
     return {
-      year: "2019",
-      month: "09",
+      now: "2019-09-05",
+      year: "",
+      month: "",
       month_list: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
       week_list: ["日", "一", "二", "三", "四", "五", "六"],
       list: [],
@@ -85,8 +89,8 @@ export default {
       let date = new Date();
       return date.getDay();
     },
-    getDayList(year, month) {
-      if(arguments.length != 2) throw new Error("getDayList必须传入两个参数year和month")
+    getDayList(year, month, range =[]) {
+      if(arguments.length < 2) throw new Error("getDayList必须传入两个参数year和month");
       let counts = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; // 每年月份天数
       let date = new Date();
       this.list = [];
@@ -114,18 +118,27 @@ export default {
         }
         
         if (i_list[i] != '') {
-          obj.full_day = year + "-" + this.month_list[month] + "-" + i_list[i];
+          let day = i_list[i] > 10 ? i_list[i] : "0" + i_list[i];
+          obj.full_day = year + "-" + this.month_list[month] + "-" + day;
+        }
+        if(range.length > 0){
+          if (obj.day >= range[0] && obj.day <= range[1]) {
+            obj.active = true;
+          }
         }
         arr.push(obj);
       }
       this.list.push(arr);
     }
   },
-  mounted() {
-    this.month = this.getCurrentMonth();
-    this.year = this.getCurrentYear();
-
-    this.getDayList(this.year, this.month);
+  created() {
+    let date = new Date();
+    this.month = date.getMonth();
+    this.year = date.getFullYear();
+    let day = date.getDate();
+    day < 10 && (day = "0" + day)
+    //this.now =  this.year + "-" + this.month_list[this.month] + "-" + day;
+    this.getDayList(this.year, this.month, [2, 5]);
   }
 }
 </script>
@@ -146,6 +159,7 @@ svg{
   text-align: center;
   border-radius: 50%;
   transition: .2s;
+  cursor: pointer;
 }
 
 .arrow:hover{
@@ -157,6 +171,7 @@ svg{
   margin: auto 0;
   text-align: center;
   flex: 1;
+  font-weight: 500;
 }
 
 .icalender{
@@ -183,6 +198,41 @@ svg{
 .week-head{
   display: flex;
   justify-content: space-around;
+  font-weight: 500;
 }
 
+.point{
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  font-weight: 500;
+}
+.active-point{
+  position: absolute;
+  border-radius: 50%;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #D0494D;
+  z-index: 2;
+}
+
+.now-point{
+  background-color: rgb(12, 69, 155);
+}
+
+.date-label{
+  position: relative;
+  z-index: 4;
+}
+.date-label[active]{
+  color: #dcdcdc;
+}
+
+.active-bg{
+  background-color: #F1868D;
+  color: #dcdcdc;
+}
 </style>
