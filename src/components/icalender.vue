@@ -22,10 +22,11 @@
       </div>
       <table>
         <tr v-for="(item,index) in list" :key="index">
-          <td v-for="(it,idx) in item" :key="idx" :class="it.active?'active-bg':''">
+          <td v-for="(it,idx) in item" :key="idx" :class="it.active?'active-bg':''" @click="handleClick(it)">
             <div class="point">
-              <div :class="{'active-point':now==it.full_day, 'now-point': now==it.full_day}"></div>
-              <span class="date-label" :active="now==it.full_day" :title="it.full_day">{{ it.day }}</span>
+              <div :class="now==it.full_day?'now-point':''"></div>
+              <div :class="{'is-point':it.point, 'active-point': active==it.full_day}"></div>
+              <span class="date-label" :active="it.point||active==it.full_day" :title="it.full_day">{{ it.day }}</span>
             </div>
           </td>
         </tr>
@@ -37,15 +38,44 @@
 <script>
 export default {
   name: "icalender",
+  props: {
+    marks: {
+      type: Array,
+      default: function () {
+        return [
+          {
+            start: "2019-09-02",
+            end: "2019-09-05"
+          },
+          {
+            start: "2019-09-12",
+            end: "2019-09-12"
+          },
+          {
+            start: "2019-09-15",
+            end: "2019-09-24"
+          }
+        ]
+      }
+    }
+  },
   data() {
     return {
+      active: "",
       now: "2019-09-05",
       year: "",
       month: "",
       month_list: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
       week_list: ["日", "一", "二", "三", "四", "五", "六"],
-      list: [],
-      counts: []
+      list: []
+    }
+  },
+  watch: {
+    marks: {
+      handler(val) {
+        this.getDayList(this.year, this.month, val);
+      },
+      deep: true
     }
   },
   methods: {
@@ -56,7 +86,11 @@ export default {
       } else {
         this.month -= 1;
       }
-      this.getDayList(this.year, this.month);
+      this.$emit("forward", {
+        year: this.year,
+        month: this.month
+      })
+      this.getDayList(this.year, this.month, this.marks);
     },
     back() {
       if(this.month == 11){
@@ -65,7 +99,11 @@ export default {
       } else {
         this.month += 1;
       }
-      this.getDayList(this.year, this.month);
+      this.$emit("back", {
+        year: this.year,
+        month: this.month
+      })
+      this.getDayList(this.year, this.month, this.marks);
     },
     getCurrentMonth() {
       let date = new Date();
@@ -89,7 +127,7 @@ export default {
       let date = new Date();
       return date.getDay();
     },
-    getDayList(year, month, range =[]) {
+    getDayList(year, month, marks =[]) {
       if(arguments.length < 2) throw new Error("getDayList必须传入两个参数year和month");
       let counts = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; // 每年月份天数
       let date = new Date();
@@ -99,7 +137,6 @@ export default {
       }
       // 根据当前月1号是星期几 判断需要绘制几列
       let this_week = new Date(year, month, 1).getDay(); // 当前月1号是星期几
-      let row = this_week >= 5 ? 6 : 5;// 绘制几列 ? 6 ：5
       let i_list = []
       for(let i=0;i<this_week;i++){
         i_list.push("")
@@ -109,11 +146,13 @@ export default {
       }
       let arr = []
       for(let i = 0;i < i_list.length;i++) {
-        if (i > 0 && i % 7 == 0) {
+        if (i > 0 && i % 7 == 0) { // 每7分隔为一个数组
           this.list.push(arr)
           arr = []
         }
         let obj = {
+          year: year,
+          month: month,
           day: i_list[i]
         }
         
@@ -121,14 +160,28 @@ export default {
           let day = i_list[i] > 10 ? i_list[i] : "0" + i_list[i];
           obj.full_day = year + "-" + this.month_list[month] + "-" + day;
         }
-        if(range.length > 0){
-          if (obj.day >= range[0] && obj.day <= range[1]) {
-            obj.active = true;
+        for(let i=0;i<marks.length;i++){
+          let c_date = new Date(marks[i].start.replace(/-/g, "/"))
+          let c_year = c_date.getFullYear();
+          let c_month = c_date.getMonth();
+          // 开始日期和结束日期必须为当前月份
+          if(c_year == year && c_month == month){
+            let start = parseInt(marks[i].start.slice(8));
+            let end = parseInt(marks[i].end.slice(8));
+            if(obj.day == start && start == end){
+              obj.point = true;
+            } else if (obj.day >= start && obj.day <= end) {
+              obj.active = true;
+            }
           }
         }
         arr.push(obj);
       }
       this.list.push(arr);
+    },
+    handleClick(data) {
+      this.active = data.full_day;
+      this.$emit("on-click", data);
     }
   },
   created() {
@@ -137,8 +190,8 @@ export default {
     this.year = date.getFullYear();
     let day = date.getDate();
     day < 10 && (day = "0" + day)
-    //this.now =  this.year + "-" + this.month_list[this.month] + "-" + day;
-    this.getDayList(this.year, this.month, [2, 5]);
+    this.now =  this.year + "-" + this.month_list[this.month] + "-" + day;
+    this.getDayList(this.year, this.month, this.marks);
   }
 }
 </script>
@@ -208,8 +261,12 @@ svg{
   height: 30px;
   line-height: 30px;
   font-weight: 500;
+  cursor: pointer;
 }
-.active-point{
+td:hover{
+  background-color: rgba(42, 96, 211, 0.5);
+}
+.is-point{
   position: absolute;
   border-radius: 50%;
   top: 0;
@@ -219,14 +276,29 @@ svg{
   z-index: 2;
 }
 
-.now-point{
+.active-point{
+  position: absolute;
+  border-radius: 50%;
+  top: 0;
+  width: 100%;
+  height: 100%;
   background-color: rgb(12, 69, 155);
+  z-index: 2;
+}
+
+.now-point{
+  position: absolute;
+  border: 3px solid rgb(25, 80, 180);
+  right: 0;
+  top: 0;
+  border-radius: 50%;
 }
 
 .date-label{
   position: relative;
   z-index: 4;
 }
+
 .date-label[active]{
   color: #dcdcdc;
 }
