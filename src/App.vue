@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <i-calender />
+    <i-calender :marks="marks" />
   </div>
 </template>
 
@@ -9,6 +9,20 @@ import iCalender from "@/components/icalender";
 
 export default {
   name: 'app',
+  data() {
+    return {
+      marks: [
+        {
+          start: "2019-09-10",
+          end: "2019-09-10",
+        },
+        {
+          start: "2019-09-13",
+          end: "2019-09-15",
+        }
+      ]
+    }
+  },
   components: {
     iCalender
   }

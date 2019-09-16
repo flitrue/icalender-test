@@ -24,8 +24,8 @@
         <tr v-for="(item,index) in list" :key="index">
           <td v-for="(it,idx) in item" :key="idx" :class="it.active?'active-bg':''" @click="handleClick(it)">
             <div class="point">
-              <div :class="now==it.full_day?'now-point':''"></div>
-              <div :class="{'is-point':it.point, 'active-point': active==it.full_day}"></div>
+              <div :class="{'now-point':now==it.full_day}"></div>
+              <div class="hover-point" :class="{'is-point':it.point, 'active-point': active==it.full_day}"></div>
               <span class="date-label" :active="it.point||active==it.full_day" :title="it.full_day">{{ it.day }}</span>
             </div>
           </td>
@@ -42,20 +42,7 @@ export default {
     marks: {
       type: Array,
       default: function () {
-        return [
-          {
-            start: "2019-09-02",
-            end: "2019-09-05"
-          },
-          {
-            start: "2019-09-12",
-            end: "2019-09-12"
-          },
-          {
-            start: "2019-09-15",
-            end: "2019-09-24"
-          }
-        ]
+        return []
       }
     }
   },
@@ -228,7 +215,7 @@ svg{
 }
 
 .icalender{
-  width: 300px;
+  width: 260px;
   user-select: none;
 }
 
@@ -237,7 +224,7 @@ svg{
 }
 
 .icalender-body{
- 
+ padding: 10px 5px;
 }
 .icalender-body table{
   width: 100%;
@@ -263,9 +250,7 @@ svg{
   font-weight: 500;
   cursor: pointer;
 }
-td:hover{
-  background-color: rgba(42, 96, 211, 0.5);
-}
+
 .is-point{
   position: absolute;
   border-radius: 50%;
@@ -274,6 +259,7 @@ td:hover{
   height: 100%;
   background-color: #D0494D;
   z-index: 2;
+  transform: scale(.9);
 }
 
 .active-point{
@@ -284,6 +270,7 @@ td:hover{
   height: 100%;
   background-color: rgb(12, 69, 155);
   z-index: 2;
+  transform: scale(.9);
 }
 
 .now-point{
@@ -292,6 +279,24 @@ td:hover{
   right: 0;
   top: 0;
   border-radius: 50%;
+}
+
+.hover-point{
+  position: absolute;
+  border-radius: 50%;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  transform: scale(.9);
+}
+
+td:hover .hover-point{
+  background-color: rgba(12, 69, 155, .5);
+}
+
+td:hover .date-label{
+  color: #dcdcdc;
 }
 
 .date-label{
