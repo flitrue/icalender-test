@@ -1,11 +1,13 @@
 <template>
   <div id="app">
-    <i-calender :marks="marks" />
+    <div style="260px">
+      <i-calender :marks="marks" />
+    </div>
   </div>
 </template>
 
 <script>
-import iCalender from "@/components/icalender";
+import iCalender from "icalender";
 
 export default {
   name: 'app',

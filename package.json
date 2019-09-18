@@ -1,5 +1,5 @@
 {
-  "name": "icalender",
+  "name": "icalender-src",
   "version": "0.1.0",
   "scripts": {
     "dev": "vue-cli-service serve",
@@ -22,6 +22,7 @@
   ],
   "dependencies": {
     "core-js": "^2.6.5",
+    "icalender": "^1.0.1",
     "vue": "^2.6.10"
   },
   "devDependencies": {
